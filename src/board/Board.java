@@ -1,39 +1,32 @@
 package board;
 
-import player.Player;
-import util.MoveResult;
-
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Board {
-    private final int mainTrackLength;
+
+    private final int boardLength;
     private final int tailLength;
-    private final Map<Player, Integer> playerPositions;
 
-    public Board(int mainTrackLength, int tailLength) {
-        this.mainTrackLength = mainTrackLength;
+    public Board(int boardLength, int tailLength) {
+        this.boardLength = boardLength;
         this.tailLength = tailLength;
-        this.playerPositions = new HashMap<>();
     }
 
-    public MoveResult movePlayer(Player player, int spaces) {
-        int current = playerPositions.getOrDefault(player, 1);
-        int newPosition = current + spaces;
+    public List<String> buildTrackForStart(int startTile) {
+        List<String> track = new ArrayList<>();
 
-        int finish = mainTrackLength + tailLength;
-
-        if(newPosition == finish || newPosition > finish) {
-            playerPositions.put(player, newPosition);
-            return new MoveResult(true, "Landed at the finish line!");
-        } else {
-            playerPositions.put(player, newPosition);
-            return new MoveResult(false, "Moved to position " + newPosition);
-
+        // main loop around the board
+        for (int i = 0; i < boardLength; i++) {
+            int pos = ((startTile - 1 + i) % boardLength) + 1;
+            track.add(String.valueOf(pos));
         }
-    }
 
-    public void addPlayer(Player player, int homePosition) {
-        playerPositions.put(player, homePosition);
+        // tail tiles
+        for (int t = 1; t <= tailLength; t++) {
+            track.add("tail-" + t);
+        }
+
+        return track;
     }
 }
