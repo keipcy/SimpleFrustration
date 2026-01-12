@@ -1,0 +1,14 @@
+// language: java
+package util;
+
+public final class Ansi {
+    public static final String RESET = "\u001B[0m";
+    public static final String RED = "\u001B[31m";
+    public static final String BLUE = "\u001B[34m";
+
+    private Ansi() {}
+
+    public static String color(String text, String colorCode) {
+        return colorCode + text + RESET;
+    }
+}
