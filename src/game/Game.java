@@ -57,30 +57,34 @@ public class Game {
 
             System.out.println("\n" + Ansi.color(plainName + "'s turn!", colorCode));
 
-            // capture position before the roll
-            String beforeRaw = current.getPositionLabel();
-
             int roll = shaker.shake();
             System.out.println(Ansi.color("Rolled: " + roll, colorCode));
 
-            // use tryMove so exactLanding mode is respected and we can detect overshoot
-            MoveResult result = current.tryMove(roll, exactLanding);
+            MoveResult result = board.calculateMove(current, roll, exactLanding);
+            current.applyMove(result);
 
-            // position after the move
-            String afterRaw = current.getPositionLabel();
+            String beforeRaw = result.from();
+            String afterRaw = result.to();
 
-            if (result == MoveResult.OVERSHOT) {
-                System.out.println(Ansi.color(plainName + " overshot and forfeits the turn (position unchanged: " + beforeRaw + ")", colorCode));
-            } else {
-                System.out.println(Ansi.color(plainName + " moved to " + afterRaw, colorCode));
+            if (result.overshot()) {
+                System.out.println(Ansi.color(
+                        plainName + " overshot and forfeits the turn (position unchanged: " + result.from() + ")",
+                        colorCode
+                ));
             }
+
+            System.out.println(Ansi.color(
+                    plainName + " moved from " + result.from() + " to " + result.to(),
+                    colorCode
+            ));
 
             // per-round summary (entire line coloured)
             String roundSummary = "Round " + round + ": " + plainName + " rolled " + roll
-                    + " — position before: " + beforeRaw + ", position after: " + afterRaw;
+                    + " — position before: " + result.from()
+                    + ", position after: " + result.to();
             System.out.println(Ansi.color(roundSummary, colorCode));
 
-            if (result == MoveResult.WON) {
+            if (result.won()) {
                 System.out.println(Ansi.color(plainName + " WINS THE GAME", colorCode));
                 winner = current;
                 gameOver = true;

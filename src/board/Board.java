@@ -1,5 +1,7 @@
 package board;
 
+import player.Player;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +13,39 @@ public class Board {
     public Board(int boardLength, int tailLength) {
         this.boardLength = boardLength;
         this.tailLength = tailLength;
+    }
+
+    // movement logic
+    public Player.MoveResult calculateMove(Player player, int roll, boolean exactLanding) {
+        int fromIndex = player.getPositionIndex();
+        int targetIndex = fromIndex + roll;
+
+        String fromLabel = player.getPositionLabel();
+
+        // overshoot logic
+        if (exactLanding && targetIndex >= player.getTrack().size()) {
+            return new Player.MoveResult(
+                    fromLabel,
+                    fromLabel,
+                    true,
+                    false
+            );
+        }
+
+        // clamp to end if overshoot allowed
+        if (targetIndex >= player.getTrack().size()) {
+            targetIndex = player.getTrack().size() - 1;
+        }
+
+        String toLabel = player.getTrack().get(targetIndex);
+        boolean won = toLabel.contains("tail-" + tailLength);
+
+        return new Player.MoveResult(
+                fromLabel,
+                toLabel,
+                false,
+                won
+        );
     }
 
     public List<String> buildTrackForStart(int startTile) {

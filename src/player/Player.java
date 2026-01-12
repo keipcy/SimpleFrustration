@@ -3,7 +3,12 @@ package player;
 import java.util.List;
 
 public class Player {
-    public enum MoveResult { MOVED, WON, OVERSHOT }
+    public record MoveResult(
+            String from,
+            String to,
+            boolean overshot,
+            boolean won
+    ) {}
 
     private final String colour;
     private final List<String> track;
@@ -19,20 +24,11 @@ public class Player {
         return colour;
     }
 
-    /**
-     * Legacy move behavior (non-exact mode). Kept for compatibility.
-     * Returns true if this move wins the game.
-     */
-    public boolean move(int roll) {
-        return tryMove(roll, false) == MoveResult.WON;
+    public void applyMove(MoveResult move) {
+        this.positionIndex = track.indexOf(move.to());
+        this.turnsTaken++;
     }
 
-    /**
-     * Attempt to move the player.
-     * If exact is false: normal behavior (advance and win if landing on or passing final tile).
-     * If exact is true: must land exactly on final tile to win; overshoot forfeits the turn and position is unchanged.
-     * Returns a MoveResult indicating the outcome.
-     */
     public MoveResult tryMove(int roll, boolean exact) {
         int lastIndex = track.size() - 1;
         if (!exact) {

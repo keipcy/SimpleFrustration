@@ -19,3 +19,55 @@ TODO::
 - Figure out how to get my pieces to have different homes and still follow the same board pattern
 - Include test scenarios 2 and 3
 - Plan for variations
+
+
+The variations and advanced features attempted and their design.
+• An explanation of where and why design patterns have been used (naming the
+design pattern).
+• An explanation of where and why SOLID principles have been followed (naming
+the principle).
+• An explanation of how you have applied clean or “ports and adapters”
+architecture with reference to dependencies  
+• An evaluation of your implementation.
+
+Strategy Pattern used to support single-die, double-die, and fixed dice behaviour.
+
+- Game
+  - Responsibility:
+    - Controls turn order 
+    - Knows when the game starts/ends 
+    - Delegates work (does NOT do the work itself)
+  - Should:
+    - Alternate players 
+    - Ask dice for a roll 
+    - Ask player to move 
+    - Check for win condition
+- Player
+  - Responsibility:
+    - Represents a single player 
+    - Owns its position and turn count 
+    - Knows its colour and home/end logic
+- Board
+  - Responsibility:
+    - Represents the board layout 
+    - Calculates movement 
+    - Knows tail positions & wraparound rules
+  - Should:
+    - “If Red is on X and rolls Y, where do they land?” 
+    - “Is this position in the tail?” 
+    - “Is this an overshoot?”
+- Win Condition
+  - Responsibility:
+    - Decide if a move results in a win
+- Hit rule
+  - Responsibility:
+    - Decide what happens when a player would land on another player
+
+Game = turn control
+Board = movement rules
+Player = state
+DiceShaker = randomness
+WinCondition = winning logic
+HitRule = collision logic
+
+Domain logic should not depend on IO: seperate the console reporter from the game class
