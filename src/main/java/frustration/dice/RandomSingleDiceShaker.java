@@ -1,4 +1,4 @@
-package dice;
+package frustration.dice;
 
 import java.util.Random;
 

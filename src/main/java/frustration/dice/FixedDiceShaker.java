@@ -1,4 +1,4 @@
-package dice;
+package frustration.dice;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ public class FixedDiceShaker implements DiceShaker {
     @Override
     public int shake() {
         if (current >= rolls.size()) {
-            throw new RuntimeException("No more dice rolls in sequence");
+            throw new RuntimeException("No more main.java.dice rolls in sequence");
         }
         return rolls.get(current++);
     }

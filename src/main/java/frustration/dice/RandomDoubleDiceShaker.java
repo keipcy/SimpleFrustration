@@ -1,4 +1,4 @@
-package dice;
+package frustration.dice;
 
 public class RandomDoubleDiceShaker implements DiceShaker {
     private final DiceShaker shaker = new RandomSingleDiceShaker();
