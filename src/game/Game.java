@@ -1,43 +1,61 @@
 package game;
 
 import board.Board;
+import board.BoardConfig;
 import dice.DiceShaker;
 import dice.RandomDoubleDiceShaker;
+import hitrule.HitRule;
+import hitrule.IgnoreHitRule;
 import player.Player;
 import player.Player.MoveResult;
 import util.Ansi;
+import wincondition.WinCondition;
+import wincondition.OvershootAllowedWinCondition;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Game {
     private final Board board;
-    private final Player red;
-    private final Player blue;
-    private Player current;
+    private final List<Player> players;
+    private int currentPlayerIndex;
     private final DiceShaker shaker;
-    private final boolean exactLanding;
+    private final WinCondition winCondition;
     private Player winner;
-
-    // per-player turn counters
-    private int redTurns = 0;
-    private int blueTurns = 0;
+    private final HitRule hitRule;
 
     public Game() {
-        this(new RandomDoubleDiceShaker(), false);
+        this(
+                new RandomDoubleDiceShaker(),
+                new OvershootAllowedWinCondition(),
+                new IgnoreHitRule()
+        );
     }
 
-    public Game(DiceShaker shaker) {
-        this(shaker, false);
+    public Game(DiceShaker shaker, WinCondition winCondition, HitRule hitRule) {
+        this(shaker, winCondition, hitRule, GameConfiguration.basicTwoPlayer());
     }
 
-    public Game(DiceShaker shaker, boolean exactLanding) {
+    public Game(
+            DiceShaker shaker,
+            WinCondition winCondition,
+            HitRule hitRule,
+            GameConfig config
+    ) {
         this.shaker = shaker;
-        this.exactLanding = exactLanding;
-        this.board = new Board(18, 3);
+        this.winCondition = winCondition;
+        this.hitRule = hitRule;
+        this.board = new Board(config.boardConfig());
 
-        this.red = new Player("red", board.buildTrackForStart(1));
-        this.blue = new Player("blue", board.buildTrackForStart(10));
+        this.players = new ArrayList<>();
+        for (var pc : config.players()) {
+            players.add(new Player(
+                    pc.colour(),
+                    board.buildTrackForStart(pc.startTile(), pc.tailPrefix())
+            ));
+        }
 
-        this.current = red;
-        this.winner = null;
+        this.currentPlayerIndex = 0;
     }
 
     public void start() {
@@ -45,22 +63,32 @@ public class Game {
         int round = 1;
 
         while (!gameOver) {
+            Player current = players.get(currentPlayerIndex);
             String plainName = current.getColour();
-            String colorCode = plainName.equals("red") ? Ansi.RED : Ansi.BLUE;
-
-            // count the turn for the current player
-            if (current == red) {
-                redTurns++;
-            } else {
-                blueTurns++;
-            }
+            String colorCode = switch (plainName.toLowerCase()) {
+                case "red" -> Ansi.RED;
+                case "blue" -> Ansi.BLUE;
+                case "green" -> Ansi.GREEN;
+                case "yellow" -> Ansi.YELLOW;
+                default -> Ansi.RESET;
+            };
 
             System.out.println("\n" + Ansi.color(plainName + "'s turn!", colorCode));
 
             int roll = shaker.shake();
             System.out.println(Ansi.color("Rolled: " + roll, colorCode));
 
-            MoveResult result = board.calculateMove(current, roll, exactLanding);
+            List<Player> others = players.stream()
+                    .filter(p -> p != current)
+                    .toList();
+
+            MoveResult result = board.calculateMove(
+                    current,
+                    others,
+                    roll,
+                    winCondition,
+                    hitRule
+            );
             current.applyMove(result);
 
             String beforeRaw = result.from();
@@ -71,12 +99,12 @@ public class Game {
                         plainName + " overshot and forfeits the turn (position unchanged: " + result.from() + ")",
                         colorCode
                 ));
+            } else {
+                System.out.println(Ansi.color(
+                        plainName + " moved from " + result.from() + " to " + result.to(),
+                        colorCode
+                ));
             }
-
-            System.out.println(Ansi.color(
-                    plainName + " moved from " + result.from() + " to " + result.to(),
-                    colorCode
-            ));
 
             // per-round summary (entire line coloured)
             String roundSummary = "Round " + round + ": " + plainName + " rolled " + roll
@@ -93,15 +121,10 @@ public class Game {
                 round++;
             }
         }
-
-        // print totals at end of game
-        System.out.println();
-        System.out.println(Ansi.color("Total turns - red: " + redTurns, Ansi.RED));
-        System.out.println(Ansi.color("Total turns - blue: " + blueTurns, Ansi.BLUE));
     }
 
     private void switchTurn() {
-        current = (current == red) ? blue : red;
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
     }
 
     public String getWinnerColour() {

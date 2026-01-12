@@ -25,28 +25,8 @@ public class Player {
     }
 
     public void applyMove(MoveResult move) {
-        this.positionIndex = track.indexOf(move.to());
-        this.turnsTaken++;
-    }
-
-    public MoveResult tryMove(int roll, boolean exact) {
-        int lastIndex = track.size() - 1;
-        if (!exact) {
-            index += roll;
-            if (index >= lastIndex) return MoveResult.WON;
-            return MoveResult.MOVED;
-        } else {
-            int target = index + roll;
-            if (target == lastIndex) {
-                index = target;
-                return MoveResult.WON;
-            } else if (target > lastIndex) {
-                // overshoot: forfeits turn, do not change index
-                return MoveResult.OVERSHOT;
-            } else {
-                index = target;
-                return MoveResult.MOVED;
-            }
+        if (!move.overshot()) {
+            this.index = track.indexOf(move.to());
         }
     }
 
@@ -54,5 +34,13 @@ public class Player {
         // show the last tile label when exactly on it; show FINISHED only when past it
         if (index > track.size() - 1) return "FINISHED";
         return track.get(index);
+    }
+
+    public List<String> getTrack() {
+        return track;
+    }
+
+    public int getPositionIndex() {
+        return index;
     }
 }

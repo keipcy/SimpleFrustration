@@ -71,3 +71,22 @@ WinCondition = winning logic
 HitRule = collision logic
 
 Domain logic should not depend on IO: seperate the console reporter from the game class
+
+“The original implementation used a boolean flag (exactLanding) to control win behaviour.
+This was refactored into a WinCondition abstraction using polymorphism.
+This removes conditional logic, improves extensibility, and adheres to the Open/Closed Principle.”
+
+Strategy pattern → DiceShaker
+Open/Closed Principle → WinCondition & HitRule
+Single Responsibility → Game vs Board vs Player
+Testability → FixedDiceShaker
+
+The dice variation was implemented using the Strategy pattern.
+The Game class depends only on the DiceShaker interface, allowing different dice behaviours (single, double, fixed) to be substituted without modification.
+This supports extensibility and testability.
+
+4-player
+This directly demonstrates:
+Maintainable multi-class design
+Open/Closed Principle
+Scalability

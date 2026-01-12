@@ -1,65 +1,61 @@
 package board;
 
+import hitrule.HitRule;
 import player.Player;
+import wincondition.WinCondition;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Board {
+    private final BoardConfig config;
 
-    private final int boardLength;
-    private final int tailLength;
-
-    public Board(int boardLength, int tailLength) {
-        this.boardLength = boardLength;
-        this.tailLength = tailLength;
+    public Board(BoardConfig config) {
+        this.config = config;
     }
 
     // movement logic
-    public Player.MoveResult calculateMove(Player player, int roll, boolean exactLanding) {
+    public Player.MoveResult calculateMove(
+            Player player,
+            List<Player> others,
+            int roll,
+            WinCondition winCondition,
+            HitRule hitRule
+    ) {
         int fromIndex = player.getPositionIndex();
         int targetIndex = fromIndex + roll;
 
         String fromLabel = player.getPositionLabel();
 
-        // overshoot logic
-        if (exactLanding && targetIndex >= player.getTrack().size()) {
-            return new Player.MoveResult(
-                    fromLabel,
-                    fromLabel,
-                    true,
-                    false
-            );
+        if (winCondition.isOvershoot(targetIndex, player.getTrack().size())) {
+            return new Player.MoveResult(fromLabel, fromLabel, true, false);
         }
 
-        // clamp to end if overshoot allowed
-        if (targetIndex >= player.getTrack().size()) {
-            targetIndex = player.getTrack().size() - 1;
+        int lastIndex = player.getTrack().size() - 1;
+        int finalIndex = Math.min(targetIndex, lastIndex);
+
+        String toLabel = player.getTrack().get(finalIndex);
+        boolean won = winCondition.isWin(targetIndex, lastIndex);
+
+        if (!hitRule.isMoveAllowed(player, others, toLabel)) {
+            return new Player.MoveResult(fromLabel, fromLabel, false, false);
         }
 
-        String toLabel = player.getTrack().get(targetIndex);
-        boolean won = toLabel.contains("tail-" + tailLength);
-
-        return new Player.MoveResult(
-                fromLabel,
-                toLabel,
-                false,
-                won
-        );
+        return new Player.MoveResult(fromLabel, toLabel, false, won);
     }
 
-    public List<String> buildTrackForStart(int startTile) {
+    public List<String> buildTrackForStart(int startTile, String tailPrefix) {
         List<String> track = new ArrayList<>();
 
         // main loop around the board
-        for (int i = 0; i < boardLength; i++) {
-            int pos = ((startTile - 1 + i) % boardLength) + 1;
+        for (int i = 0; i < config.boardLength(); i++) {
+            int pos = ((startTile - 1 + i) % config.boardLength()) + 1;
             track.add(String.valueOf(pos));
         }
 
-        // tail tiles
-        for (int t = 1; t <= tailLength; t++) {
-            track.add("tail-" + t);
+        // player-specific tail tiles
+        for (int t = 1; t <= config.tailLength(); t++) {
+            track.add(tailPrefix + t);
         }
 
         return track;
