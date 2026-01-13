@@ -12,12 +12,12 @@ public class Player {
 
     private final String colour;
     private final List<String> track;
-    private int index; // position in track list
+    private int index;
 
     public Player(String colour, List<String> track) {
         this.colour = colour;
         this.track = track;
-        this.index = 0; // start at beginning of track
+        this.index = 0;
     }
 
     public String getColour() {
@@ -31,7 +31,6 @@ public class Player {
     }
 
     public String getPositionLabel() {
-        // show the last tile label when exactly on it; show FINISHED only when past it
         if (index > track.size() - 1) return "FINISHED";
         return track.get(index);
     }

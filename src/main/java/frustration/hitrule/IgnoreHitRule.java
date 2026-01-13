@@ -7,6 +7,6 @@ public class IgnoreHitRule implements HitRule {
 
     @Override
     public boolean isMoveAllowed(Player mover, List<Player> others, String targetLabel) {
-        return true; // always allow the move
+        return true;
     }
 }

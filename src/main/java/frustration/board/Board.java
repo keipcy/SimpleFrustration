@@ -47,13 +47,11 @@ public class Board {
     public List<String> buildTrackForStart(int startTile, String tailPrefix) {
         List<String> track = new ArrayList<>();
 
-        // main loop around the main.java.board
         for (int i = 0; i < config.boardLength(); i++) {
             int pos = ((startTile - 1 + i) % config.boardLength()) + 1;
             track.add(String.valueOf(pos));
         }
 
-        // main.java.player-specific tail tiles
         for (int t = 1; t <= config.tailLength(); t++) {
             track.add(tailPrefix + t);
         }
